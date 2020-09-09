@@ -17,9 +17,9 @@ def buildTables():
         CREATE TABLE messages(
             id              SERIAL PRIMARY KEY,
             message         TEXT NOT NULL,
-            sender          VARCHAR(20) NOT NULL,
-            receiver        VARCHAR(20) NOT NULL,
-            year            INTEGER NOT NULL
+            sender          TEXT,
+            receiver        TEXT,
+            year            TEXT
         );
     """
     cur.execute(sql)
@@ -47,9 +47,9 @@ def rebuildTables():
         CREATE TABLE messages(
             id              SERIAL PRIMARY KEY,
             message         TEXT NOT NULL,
-            sender          VARCHAR(20) NOT NULL,
-            receiver        VARCHAR(20) NOT NULL,
-            year            INTEGER NOT NULL
+            sender          TEXT,
+            receiver        TEXT,
+            year            TEXT
         );
     """
     cur.execute(drop_sql)
