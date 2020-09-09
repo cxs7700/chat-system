@@ -127,11 +127,13 @@ class TestChat(unittest.TestCase):
             
         sql = """
             DELETE FROM messages WHERE year = 'Year';
-            SELECT COUNT(*) FROM messages WHERE CAST(year AS INTEGER) >= 1934 AND CAST(year AS INTEGER) <= 1946;
+            SELECT COUNT(*) FROM messages 
+                WHERE (CAST(year AS INTEGER) >= 1934 AND CAST(year AS INTEGER) <= 1946)
+                AND (sender = 'Larry' OR sender = 'Moe' OR sender = 'Curly');
         """
         cur.execute(sql)
         conn.commit()
-        self.assertEqual([(48,)], cur.fetchall(), "Incorrect number of messages.")
+        self.assertEqual([(8,)], cur.fetchall(), "Incorrect number of messages.")
         conn.close()
         
     def test_suspended_account(self):
