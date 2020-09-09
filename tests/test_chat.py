@@ -2,7 +2,6 @@ import unittest
 from src.chat import *
 from src.swen344_db_utils import connect
 import csv
-from io import StringIO
 import datetime
 
 class TestChat(unittest.TestCase):
