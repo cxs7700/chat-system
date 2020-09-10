@@ -35,7 +35,7 @@ def rebuildTables():
         DROP TABLE IF EXISTS suspensions;
     """
     create_sql = """
-        CREATE TABLE users(
+        IF NOT EXISTS CREATE TABLE users(
             id	            SERIAL PRIMARY KEY NOT NULL,
             username        VARCHAR(20) NOT NULL,
             email           TEXT NOT NULL UNIQUE,
@@ -44,7 +44,7 @@ def rebuildTables():
             suspension      TIMESTAMP DEFAULT NULL
         );
         
-        CREATE TABLE messages(
+        IF NOT EXISTS CREATE TABLE messages(
             id              SERIAL PRIMARY KEY,
             message         TEXT NOT NULL,
             sender          TEXT,
