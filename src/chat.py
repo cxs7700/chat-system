@@ -30,7 +30,8 @@ def rebuildTables():
     conn = connect()
     cur = conn.cursor()
     drop_sql = """
-        DROP TABLE IF EXISTS example_table
+        DROP TABLE IF EXISTS users;
+        DROP TABLE IF EXISTS messages;
     """
     create_sql = """
         IF NOT EXISTS CREATE TABLE users(
