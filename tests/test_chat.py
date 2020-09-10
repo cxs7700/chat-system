@@ -6,7 +6,8 @@ import datetime
 
 class TestChat(unittest.TestCase):
 
-    def test_build_users_table(self):
+    def test_build_tables(self):
+        """Build the tables"""
         conn = connect()
         cur = conn.cursor()
         rebuildTables()
