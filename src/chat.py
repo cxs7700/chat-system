@@ -83,7 +83,7 @@ def getUserByUserID(id):
     conn.commit()
     conn.close
     
-def getUserByUsername(username):
+def getUsersByUsername(username):
     conn = connect()
     cur = conn.cursor()
     cur.execute("SELECT * FROM users WHERE username=%s;", username)
@@ -96,25 +96,11 @@ def deleteUserByUserID(id):
     cur.execute("DELETE FROM users WHERE id=%s;", id)
     conn.commit()
     conn.close
-    
-def deleteUserByUsername(username):
-    conn = connect()
-    cur = conn.cursor()
-    cur.execute("DELETE FROM users WHERE username=%s;", username)
-    conn.commit()
-    conn.close
 
 def changeUsernameByUserID(newUsername, id):
     conn = connect()
     cur = conn.cursor()
     cur.execute("UPDATE users SET username=%s WHERE id=%s;", (newUsername, id))
-    conn.commit()
-    conn.close
-    
-def changeUsernameByUsername(newUsername, oldUsername):
-    conn = connect()
-    cur = conn.cursor()
-    cur.execute("UPDATE users SET username=%s WHERE username=%s;", (newUsername, oldUsername))
     conn.commit()
     conn.close
     
@@ -125,24 +111,10 @@ def changeEmailByUserID(newEmail, id):
     conn.commit()
     conn.close
     
-def changeEmailByUsername(newEmail, username):
-    conn = connect()
-    cur = conn.cursor()
-    cur.execute("UPDATE users SET email=%s WHERE username=%s;", (newEmail, username))
-    conn.commit()
-    conn.close
-    
 def changePhoneByUserID(newPhone, id):
     conn = connect()
     cur = conn.cursor()
     cur.execute("UPDATE users SET phone=%s WHERE id=%s", (newPhone, id))
-    conn.commit()
-    conn.close
-    
-def changePhoneByUserID(newPhone, username):
-    conn = connect()
-    cur = conn.cursor()
-    cur.execute("UPDATE users SET phone=%s WHERE id=%s", (newPhone, username))
     conn.commit()
     conn.close
     
