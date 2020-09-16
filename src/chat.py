@@ -7,7 +7,7 @@ def buildTables():
     sql = """
         CREATE TABLE users(
             id	            SERIAL PRIMARY KEY NOT NULL,
-            username        VARCHAR(20) NOT NULL,
+            username        VARCHAR(20) UNIQUE NOT NULL,
             email           TEXT NOT NULL UNIQUE,
             phone           TEXT NOT NULL,
             ssn             VARCHAR(11) NOT NULL UNIQUE,
@@ -48,7 +48,7 @@ def rebuildTables():
             message         TEXT NOT NULL,
             sender          TEXT,
             receiver        TEXT,
-            year            TEXT
+            year            DATETIME DEFAULT NOW()
         );
     """
     cur.execute(drop_sql)
@@ -62,116 +62,138 @@ def rebuildTables():
 ##############################
     
 # USERS
-def createUser(username, email, phone, ssn, suspension):
+def createUser(username, email, phone, ssn):
     conn = connect()
     cur = conn.cursor()
-    cur.execute("INSERT INTO users VALUES (%s, %s, %s, %s, %s);", (username, email, phone, ssn, suspension))
+    cur.execute("INSERT INTO users (username, email, phone, ssn) VALUES (%s, %s, %s, %s);", (username, email, phone, ssn))
     conn.commit()
-    conn.close
+    conn.close()
     
 def getAllUsers():
     conn = connect()
     cur = conn.cursor()
     cur.execute("SELECT * FROM users;")
     conn.commit()
-    conn.close
+    conn.close()
     
 def getUserByUserID(id):
     conn = connect()
     cur = conn.cursor()
     cur.execute("SELECT * FROM users WHERE id=%s;", id)
     conn.commit()
-    conn.close
+    conn.close()
     
 def getUsersByUsername(username):
     conn = connect()
     cur = conn.cursor()
     cur.execute("SELECT * FROM users WHERE username=%s;", username)
     conn.commit()
-    conn.close
+    conn.close()
     
 def deleteUserByUserID(id):
     conn = connect()
     cur = conn.cursor()
     cur.execute("DELETE FROM users WHERE id=%s;", id)
     conn.commit()
-    conn.close
+    conn.close()
+    
+def deleteUserByUsername(username):
+    conn = connect()
+    cur = conn.cursor()
+    cur.execute("DELETE FROM users WHERE username=%s;", [username])
+    conn.commit()
+    conn.close()
 
-def changeUsernameByUserID(newUsername, id):
+def updateUsernameByUserID(newUsername, id):
     conn = connect()
     cur = conn.cursor()
     cur.execute("UPDATE users SET username=%s WHERE id=%s;", (newUsername, id))
     conn.commit()
-    conn.close
+    conn.close()
     
-def changeEmailByUserID(newEmail, id):
+def updateEmailByUserID(newEmail, id):
     conn = connect()
     cur = conn.cursor()
     cur.execute("UPDATE users SET email=%s WHERE id=%s;", (newEmail, id))
     conn.commit()
-    conn.close
+    conn.close()
     
-def changePhoneByUserID(newPhone, id):
+def updateEmailByUsername(newEmail, username):
+    conn = connect()
+    cur = conn.cursor()
+    cur.execute("UPDATE users SET email=%s WHERE username=%s;", (newEmail, username))
+    conn.commit()
+    conn.close()
+    
+def updatePhoneByUserID(newPhone, id):
     conn = connect()
     cur = conn.cursor()
     cur.execute("UPDATE users SET phone=%s WHERE id=%s", (newPhone, id))
     conn.commit()
-    conn.close
+    conn.close()
     
 def removeSuspensionByUserID(id):
     conn = connect()
     cur = conn.cursor()
-    cur.execute("UPDATE users SET suspension=%s WHERE id=%s;", (NULL, id))
+    cur.execute("UPDATE users SET suspension=%s WHERE id=%s;", (None, id))
     conn.commit()
-    conn.close
+    conn.close()
+    
+def removeSuspensionByUsername(username):
+    conn = connect()
+    cur = conn.cursor()
+    cur.execute("UPDATE users SET suspension=%s WHERE username=%s;", (None, username))
+    conn.commit()
+    conn.close()
     
 def suspendUserByUserID(suspension, id):
     conn = connect()
     cur = conn.cursor()
     cur.execute("UPDATE users SET suspension=%s WHERE id=%s", (suspension, id))
     conn.commit()
-    conn.close
+    conn.close()
+    
+def suspendUserByUsername(suspension, username):
+    conn = connect()
+    cur = conn.cursor()
+    cur.execute("UPDATE users SET suspension=%s WHERE username=%s", (suspension, username))
+    conn.commit()
+    conn.close()
 
     
 # MESSAGES
-def createMessage():
+def sendMessage(sender, receiver, message, year):
+    print("\nAttempting to send a message...")
+    conn = connect()
+    cur = conn.cursor()
+    cur.execute("SELECT suspension FROM users WHERE username=%s", [sender])
+    data = cur.fetchall()
+    if data[0][0] != None:
+        print("User is suspended from sending messages. The suspension ends on:", data[0][0])
+    else:
+        print("Message sent successfully.")
+        cur.execute("INSERT INTO messages (message, sender, receiver, year) VALUES (%s, %s, %s, %s);", (message, sender, receiver, year))
+    conn.commit()
+    conn.close()
+    
+def deleteMessage(id):
     conn = connect()
     cur = conn.cursor()
     
     conn.commit()
-    conn.close
-
-def getAllMessages():
-    conn = connect()
-    cur = conn.cursor()
-    
-    conn.commit()
-    conn.close
-    
-def deleteMessage():
-    conn = connect()
-    cur = conn.cursor()
-    
-    conn.commit()
-    conn.close
+    conn.close()
     
 def deleteAllMessages():
     conn = connect()
     cur = conn.cursor()
     
     conn.commit()
-    conn.close
+    conn.close()
     
 def editMessage():
     conn = connect()
     cur = conn.cursor()
     
     conn.commit()
-    conn.close
+    conn.close()
     
-def x():
-    conn = connect()
-    cur = conn.cursor()
-    
-    conn.commit()
-    conn.close
