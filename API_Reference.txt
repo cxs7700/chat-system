@@ -1,0 +1,173 @@
+buildTables:
+  - Initially builds the tables using SQL statements.
+  - Arguments:
+    - N/A
+  - Control Assumptions:
+    - 
+  - Constructs the users table and messages table.
+  
+rebuildTables:
+  - Reuilds the tables using SQL statements and drops the tables if they already exist.
+  - Arguments:
+    - N/A
+  - Control Assumptions:
+    - 
+  - Constructs the users table and messages table.
+  
+createUser:
+  - Creates an instance of a user given the necessary information as arguments.
+  - Arguments:
+    - username - username of the new user
+    - email - email of the new user
+    - phone - phone number of the new user
+    - ssn - social security number of the new user
+  - Control Assumptions:
+    - 
+  - Constructs a user in the users table.
+  
+getAllUsers:
+  - Retrieves users is the users table. 
+  - Arguments:
+    - N/A
+  - Control Assumptions:
+    - 
+  - Returns all users in the users database.
+  
+getUserByUserID:
+  - Retrieves a single user by the user ID primary key from the users table.
+  - Arguments:
+    - id - user's id
+  - Control Assumptions:
+    - 
+  - Returns a user.
+  
+getUserByUsername:
+  - Retrieves a single user from the users table by the username.
+  - Arguments:
+    - username - user's username
+  - Control Assumptions:
+    - 
+  - Returns a user.
+  
+deleteUserByUserID:
+  - Removes a user from the users table using the user ID.
+  - Arguments:
+    - id - user's id
+  - Control Assumptions:
+    - 
+  - N/A
+  
+deleteUserByUsername:
+  - Removes a user from the users table using the user's username.
+  - Arguments:
+    - username - user's username
+  - Control Assumptions:
+    - 
+  - N/A
+  
+updateUsernameByUserID:
+  - Updates a user's username using the user ID.
+  - Arguments:
+    - newUsername - new username
+    - id - user's id
+  - Control Assumptions:
+    - 
+  - N/A
+  
+updateEmailByUserID:
+  - Updates a user's email using the user ID.
+  - Arguments:
+    - newEmail - new email
+    - id - user's id
+  - Control Assumptions:
+    - 
+  - N/A
+  
+updateEmailByUsername:
+  - Updates a user's email using the user's username.
+  - Arguments:
+    - newEmail - new email
+    - id - user id
+  - Control Assumptions:
+    - 
+  - N/A
+  
+updatePhoneByUserID:
+  - Update's a user's phone number using the user's ID.
+  - Arguments:
+    - newPhone - new phone number
+    - id - user id
+  - Control Assumptions:
+    - 
+  - N/A 
+  
+removeSuspensionByUsername:
+  - Removes a suspension of sending messages from a user using the user's username.
+  - Arguments:
+    - username - user's username
+  - Control Assumptions:
+    - 
+  - N/A 
+  
+suspendUserByUserID:
+  - Suspends a user from sending messages using the user's ID.
+  - Arguments:
+    - suspension - date when suspension ends
+    - id - user id
+  - Control Assumptions:
+    - 
+  - N/A 
+  
+suspendUserByUsername:
+  - Suspends a user from sending messages using the user's username.
+  - Arguments:
+    - suspension - date when suspension ends
+    - username - user's username
+  - Control Assumptions:
+    - 
+  - N/A
+  
+sendMessage:
+  - Allows a user to send a message to another user.
+  - Arguments:
+    - sender - user that is sending the message
+    - receiver - user that is receiving the message
+    - message - message body
+    - year - timestamp of when the message was sent
+  - Control Assumptions:
+    - 
+  - N/A 
+  
+getAllMessagesByUsername:
+  - Retrieves all message sent by a user.
+  - Arguments:
+    - username - user's username
+  - Control Assumptions:
+    - 
+  - Returns all messages sent by a user from the message's table.
+  
+deleteMessage:
+  - Deletes a message.
+  - Arguments:
+    - id - message id
+  - Control Assumptions:
+    - 
+  - N/A 
+  
+deleteAllMessages:
+  - Deletes all messages send by a user.
+  - Arguments:
+    - username - user's messages to be deleted
+  - Control Assumptions:
+    - 
+  - N/A 
+  
+editMessage:
+  - Changes the contents of a message.
+  - Arguments:
+    - newMessage - new message to replace the old message
+    - id - message id
+  - Control Assumptions:
+    - 
+  - N/A
+  

@@ -83,7 +83,7 @@ def getUserByUserID(id):
     conn.commit()
     conn.close()
     
-def getUsersByUsername(username):
+def getUserByUsername(username):
     conn = connect()
     cur = conn.cursor()
     cur.execute("SELECT * FROM users WHERE username=%s;", username)
