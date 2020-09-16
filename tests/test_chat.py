@@ -108,13 +108,13 @@ class TestChat(unittest.TestCase):
         self.assertEqual([(5,)], cur.fetchall(), "Incorrect number of users.")
         conn.close()
         
-    # def test_total_number_of_messages(self):
-    #     conn = connect()
-    #     cur = conn.cursor()
-    #     cur.execute("SELECT COUNT(message) - 1 FROM messages;")
-    #     conn.commit()
-    #     self.assertEqual([(184,)], cur.fetchall(), "Incorrect number of messages.")
-    #     conn.close()
+    def test_total_number_of_messages(self):
+        conn = connect()
+        cur = conn.cursor()
+        cur.execute("SELECT COUNT(message) - 1 FROM messages;")
+        conn.commit()
+        self.assertEqual([(369,)], cur.fetchall(), "Incorrect number of messages.")
+        conn.close()
         
     def test_find_messages(self):
         conn = connect()
@@ -173,12 +173,18 @@ class TestChat(unittest.TestCase):
         self.assertEqual([(None,)], cur.fetchall(), "Curly is still suspended.")
         conn.close()
         
-    def test_get_messages_abbott_costello(self):
+    def test_get_messages_between_abbott_and_costello(self):
         conn = connect()
         cur = conn.cursor()
-        cur.execute("SELECT username FROM users;")
+        sql = """
+            SELECT COUNT(message) FROM messages 
+                WHERE ((sender = 'Abbott' AND receiver = 'Costello')
+                OR (sender = 'Costello' AND receiver = 'Abbott'))
+                AND (message LIKE '%Naturally%');
+        """
+        cur.execute(sql)
         conn.commit()
-        self.assertEqual([('Abbott',), ('Costello',), ('Moe',), ('Larry',), ('Curly',)], cur.fetchall(), "Incorrect users.")
+        self.assertEqual([(5,)], cur.fetchall(), "Incorrect number of messages.")
         conn.close()
         
     
