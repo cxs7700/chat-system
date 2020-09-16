@@ -2,16 +2,16 @@ buildTables:
   - Initially builds the tables using SQL statements.
   - Arguments:
     - N/A
-  - Control Assumptions:
-    - 
+  - Access Control Assumptions:
+    - Complete unrestricted access
   - Constructs the users table and messages table.
   
 rebuildTables:
   - Reuilds the tables using SQL statements and drops the tables if they already exist.
   - Arguments:
     - N/A
-  - Control Assumptions:
-    - 
+  - Access Control Assumptions:
+    - Complete unrestricted access
   - Constructs the users table and messages table.
   
 createUser:
@@ -21,48 +21,48 @@ createUser:
     - email - email of the new user
     - phone - phone number of the new user
     - ssn - social security number of the new user
-  - Control Assumptions:
-    - 
+  - Access Control Assumptions:
+    - Complete unrestricted access
   - Constructs a user in the users table.
   
 getAllUsers:
   - Retrieves users is the users table. 
   - Arguments:
     - N/A
-  - Control Assumptions:
-    - 
+  - Access Control Assumptions:
+    - Complete unrestricted access
   - Returns all users in the users database.
   
 getUserByUserID:
   - Retrieves a single user by the user ID primary key from the users table.
   - Arguments:
     - id - user's id
-  - Control Assumptions:
-    - 
+  - Access Control Assumptions:
+    - Complete unrestricted access
   - Returns a user.
   
 getUserByUsername:
   - Retrieves a single user from the users table by the username.
   - Arguments:
     - username - user's username
-  - Control Assumptions:
-    - 
+  - Access Control Assumptions:
+    - Complete unrestricted access
   - Returns a user.
   
 deleteUserByUserID:
   - Removes a user from the users table using the user ID.
   - Arguments:
     - id - user's id
-  - Control Assumptions:
-    - 
+  - Access Control Assumptions:
+    - Complete unrestricted access
   - N/A
   
 deleteUserByUsername:
   - Removes a user from the users table using the user's username.
   - Arguments:
     - username - user's username
-  - Control Assumptions:
-    - 
+  - Access Control Assumptions:
+    - Complete unrestricted access
   - N/A
   
 updateUsernameByUserID:
@@ -70,8 +70,8 @@ updateUsernameByUserID:
   - Arguments:
     - newUsername - new username
     - id - user's id
-  - Control Assumptions:
-    - 
+  - Access Control Assumptions:
+    - Complete unrestricted access
   - N/A
   
 updateEmailByUserID:
@@ -79,8 +79,8 @@ updateEmailByUserID:
   - Arguments:
     - newEmail - new email
     - id - user's id
-  - Control Assumptions:
-    - 
+  - Access Control Assumptions:
+    - Complete unrestricted access
   - N/A
   
 updateEmailByUsername:
@@ -88,8 +88,8 @@ updateEmailByUsername:
   - Arguments:
     - newEmail - new email
     - id - user id
-  - Control Assumptions:
-    - 
+  - Access Control Assumptions:
+    - Complete unrestricted access
   - N/A
   
 updatePhoneByUserID:
@@ -97,16 +97,16 @@ updatePhoneByUserID:
   - Arguments:
     - newPhone - new phone number
     - id - user id
-  - Control Assumptions:
-    - 
+  - Access Control Assumptions:
+    - Complete unrestricted access
   - N/A 
   
 removeSuspensionByUsername:
   - Removes a suspension of sending messages from a user using the user's username.
   - Arguments:
     - username - user's username
-  - Control Assumptions:
-    - 
+  - Access Control Assumptions:
+    - Complete unrestricted access
   - N/A 
   
 suspendUserByUserID:
@@ -114,8 +114,8 @@ suspendUserByUserID:
   - Arguments:
     - suspension - date when suspension ends
     - id - user id
-  - Control Assumptions:
-    - 
+  - Access Control Assumptions:
+    - Complete unrestricted access
   - N/A 
   
 suspendUserByUsername:
@@ -123,8 +123,8 @@ suspendUserByUsername:
   - Arguments:
     - suspension - date when suspension ends
     - username - user's username
-  - Control Assumptions:
-    - 
+  - Access Control Assumptions:
+    - Complete unrestricted access
   - N/A
   
 sendMessage:
@@ -134,32 +134,32 @@ sendMessage:
     - receiver - user that is receiving the message
     - message - message body
     - year - timestamp of when the message was sent
-  - Control Assumptions:
-    - 
+  - Access Control Assumptions:
+    - Complete unrestricted access
   - N/A 
   
 getAllMessagesByUsername:
   - Retrieves all message sent by a user.
   - Arguments:
     - username - user's username
-  - Control Assumptions:
-    - 
+  - Access Control Assumptions:
+    - Complete unrestricted access
   - Returns all messages sent by a user from the message's table.
   
 deleteMessage:
   - Deletes a message.
   - Arguments:
     - id - message id
-  - Control Assumptions:
-    - 
+  - Access Control Assumptions:
+    - Complete unrestricted access
   - N/A 
   
 deleteAllMessages:
   - Deletes all messages send by a user.
   - Arguments:
     - username - user's messages to be deleted
-  - Control Assumptions:
-    - 
+  - Access Control Assumptions:
+    - Complete unrestricted access
   - N/A 
   
 editMessage:
@@ -167,7 +167,7 @@ editMessage:
   - Arguments:
     - newMessage - new message to replace the old message
     - id - message id
-  - Control Assumptions:
-    - 
+  - Access Control Assumptions:
+    - Complete unrestricted access
   - N/A
   
