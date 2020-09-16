@@ -176,24 +176,31 @@ def sendMessage(sender, receiver, message, year):
     conn.commit()
     conn.close()
     
+def getAllMessagesByUsername(username):
+    conn = connect()
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM messages WHERE sender=%s", [username])
+    conn.commit()
+    conn.close()
+    
 def deleteMessage(id):
     conn = connect()
     cur = conn.cursor()
-    
+    cur.execute("DELETE FROM messages WHERE id=%s", [id])
     conn.commit()
     conn.close()
     
-def deleteAllMessages():
+def deleteAllMessages(username):
     conn = connect()
     cur = conn.cursor()
-    
+    cur.execute("DELETE * FROM messages;")
     conn.commit()
     conn.close()
     
-def editMessage():
+def editMessage(newMessage, id):
     conn = connect()
     cur = conn.cursor()
-    
+    cur.execute("UPDATE messages SET message=%s WHERE id=%s", (newMessage, id))
     conn.commit()
     conn.close()
     

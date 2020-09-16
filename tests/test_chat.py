@@ -3,7 +3,6 @@ from src.chat import *
 from src.swen344_db_utils import connect
 import csv
 import datetime
-import json
 
 class TestChat(unittest.TestCase):
     def setUp(self):
@@ -111,9 +110,9 @@ class TestChat(unittest.TestCase):
     def test_total_number_of_messages(self):
         conn = connect()
         cur = conn.cursor()
-        cur.execute("SELECT COUNT(message) - 1 FROM messages;")
+        cur.execute("SELECT COUNT(message) - 2 FROM messages;")
         conn.commit()
-        self.assertEqual([(369,)], cur.fetchall(), "Incorrect number of messages.")
+        self.assertEqual([(368,)], cur.fetchall(), "Incorrect number of messages.")
         conn.close()
         
     def test_find_messages(self):
@@ -178,13 +177,17 @@ class TestChat(unittest.TestCase):
         cur = conn.cursor()
         sql = """
             SELECT COUNT(message) FROM messages 
-                WHERE ((sender = 'Abbott' AND receiver = 'Costello')
-                OR (sender = 'Costello' AND receiver = 'Abbott'))
+                WHERE (
+                    (sender = 'Abbott' AND receiver = 'Costello')
+                    OR (sender = 'Costello' AND receiver = 'Abbott')
+                    OR (sender = 'Abbott' AND receiver IS NULL)
+                    OR (sender = 'Costello' AND receiver IS NULL)
+                )
                 AND (message LIKE '%Naturally%');
         """
         cur.execute(sql)
         conn.commit()
-        self.assertEqual([(5,)], cur.fetchall(), "Incorrect number of messages.")
+        self.assertEqual([(16,)], cur.fetchall(), "Incorrect number of messages.")
         conn.close()
         
     
