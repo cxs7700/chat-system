@@ -9,6 +9,8 @@ class TestChat(unittest.TestCase):
         conn = connect()
         cur = conn.cursor()
         sql = """
+            DROP TABLE IF EXISTS users, messages, communities, channels, privileges, admins CASCADE;
+            
             CREATE TABLE users(
                 id	            SERIAL PRIMARY KEY NOT NULL,
                 username        VARCHAR(20) UNIQUE NOT NULL,
@@ -17,13 +19,45 @@ class TestChat(unittest.TestCase):
                 ssn             VARCHAR(11) NOT NULL UNIQUE,
                 suspension      TIMESTAMP DEFAULT NULL
             );
+            
+            CREATE TABLE communities(
+                name	        VARCHAR(15) PRIMARY KEY UNIQUE
+            );
         
+            CREATE TABLE channels(
+                id              SERIAL PRIMARY KEY NOT NULL,
+                cname           VARCHAR(15) UNIQUE,
+                name            VARCHAR(15) UNIQUE,
+                FOREIGN KEY(cname) 
+                    REFERENCES communities(name)
+            );
+            
             CREATE TABLE messages(
                 id              SERIAL PRIMARY KEY,
+                chname          VARCHAR(15) UNIQUE,
                 message         TEXT NOT NULL,
                 sender          TEXT,
                 receiver        TEXT,
-                year            TEXT
+                year            TEXT,
+                FOREIGN KEY(chname)
+                    REFERENCES channels(name)
+            );
+            
+            CREATE TABLE privileges(
+                cname           VARCHAR(15) UNIQUE,
+                role            VARCHAR(11) UNIQUE,
+                FOREIGN KEY(cname)
+                    REFERENCES communities(name)
+            );
+            
+            CREATE TABLE admins(
+                id              SERIAL PRIMARY KEY NOT NULL,
+                uid             INTEGER UNIQUE,
+                cname           VARCHAR(15) UNIQUE,
+                FOREIGN KEY(cname)
+                    REFERENCES communities(name),
+                FOREIGN KEY(uid)
+                    REFERENCES users(id)
             );
         
             INSERT INTO users (username, email, phone, ssn, suspension) VALUES
@@ -57,7 +91,7 @@ class TestChat(unittest.TestCase):
     def tearDown(self):
         conn = connect()
         cur = conn.cursor()
-        cur.execute("DROP TABLE IF EXISTS users, messages;")
+        cur.execute("DROP TABLE IF EXISTS users, messages, communities, channels, privileges, admins CASCADE;")
         conn.commit()
         conn.close()
         

@@ -15,40 +15,44 @@ def buildTables():
         );
         
         CREATE TABLE messages(
-            id              SERIAL PRIMARY KEY,
-            chname          VARCHAR(15) NOT NULL UNIQUE,
-            message         TEXT NOT NULL,
-            sender          TEXT,
-            receiver        TEXT,
-            year            TEXT
-            CONSTRAINT fk_channel
+                id              SERIAL PRIMARY KEY,
+                chname          VARCHAR(15) NOT NULL UNIQUE,
+                message         TEXT NOT NULL,
+                sender          TEXT,
+                receiver        TEXT,
+                year            TEXT,
                 FOREIGN KEY(chname)
-                    REFERENCES channels(name),
-                        VARCHAR(15) NOT NULL UNIQUE
-        );
+                    REFERENCES channels(name)
+            );
         
         CREATE TABLE communities(
-            name	        PRIMARY KEY VARCHAR(15) NOT NULL UNIQUE
+            name	        VARCHAR(15) PRIMARY KEY NOT NULL UNIQUE
         );
         
         CREATE TABLE channels(
             id              SERIAL PRIMARY KEY NOT NULL,
             cname           VARCHAR(15) NOT NULL UNIQUE,
             name            VARCHAR(15) NOT NULL UNIQUE,
-            CONSTRAINT fk_community
-                FOREIGN KEY(cname) 
-                    REFERENCES communities(name),
-            name            VARCHAR(15) NOT NULL UNIQUE
+            FOREIGN KEY(cname) 
+                REFERENCES communities(name)
         );
         
         CREATE TABLE privileges(
             cname           VARCHAR(15) NOT NULL UNIQUE,
             role            VARCHAR(11) NOT NULL UNIQUE,
-            CONSTRAINT fk_community
-                FOREIGN KEY(cname)
-                    REFERENCES community(name)
-                        VARCHAR(15) NOT NULL UNIQUE
-        )
+            FOREIGN KEY(cname)
+                REFERENCES communities(name)
+        );
+        
+        CREATE TABLE admins(
+            id              SERIAL PRIMARY KEY NOT NULL,
+            uid             INTEGER NOT NULL UNIQUE,
+            cname           VARCHAR(15) NOT NULL UNIQUE,
+            FOREIGN KEY(cname)
+                REFERENCES communities(name),
+            FOREIGN KEY(uid)
+                REFERENCES users(id)
+        );
     """
     cur.execute(sql)
     conn.commit() 
