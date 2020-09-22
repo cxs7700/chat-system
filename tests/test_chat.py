@@ -116,7 +116,14 @@ class TestChat(unittest.TestCase):
             f.close()
             
         # TODO: Load CSV into each CHANNEL for each COMMUNITY
-        
+        with open('db3_populate_channels.csv', newline='') as f:
+            data = csv.reader(f, delimiter=',', quotechar='"')
+            for row in data:
+                cur.execute(
+                    "INSERT INTO channels_messages (community_id, channel_id, message, year) VALUES (%s, %s, %s, %s);",
+                    (row[0], row[1], row[2], row[3])
+                )
+            f.close()
         
         conn.commit()
         conn.close()
@@ -284,24 +291,33 @@ class TestChat(unittest.TestCase):
         deleteMessageFromChannel(userID[0][0], 1, communityID[0][0], channelID[0][0])
         cur.execute("SELECT COUNT(*) FROM channels_messages")
         conn.commit()
-        self.assertEqual([(9,)], cur.fetchall(), "Incorrect amount of messages left in the channel.")
+        self.assertEqual([(90,)], cur.fetchall(), "Incorrect amount of messages left in the channel.")
         conn.close()
         
-    # def test_lex_delete_message():
+    def test_lex_delete_message(self):
+        conn = connect()
+        cur = conn.cursor()
+        addUserToCommunity("Lex", "lex@gmail.com", "243123823", "987651234", "SWEN-344")
+        cur.execute("SELECT id FROM users WHERE username='Lex';")
+        userID = cur.fetchall()
+        cur.execute("SELECT id FROM communities WHERE name='SWEN-331';")
+        communityID = cur.fetchall()
+        cur.execute("SELECT id FROM channels WHERE name='General';")
+        channelID = cur.fetchall()
+        deleteMessageFromChannel(userID[0][0], 1, communityID[0][0], channelID[0][0])
+        cur.execute("SELECT COUNT(*) FROM channels_messages")
+        conn.commit()
+        self.assertEqual([(90,)], cur.fetchall(), "Incorrect amount of messages left in the channel.")
+        conn.close()
+        
+    # def test_lex_create_channel(self):
     #     conn = connect()
     #     cur = conn.cursor()
     #     sql = """
         
     #     """
         
-    # def test_lex_create_channel():
-    #     conn = connect()
-    #     cur = conn.cursor()
-    #     sql = """
-        
-    #     """
-        
-    # def test_private_channel():
+    # def test_private_channel(self):
     #     conn = connect()
     #     cur = conn.cursor()
     #     sql = """

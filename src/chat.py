@@ -252,7 +252,7 @@ def makeModerator(community, username):
     data = cur.fetchall()
     if data[0][0] != None:
         cur.execute("UPDATE communities_users SET isMod=TRUE WHERE user_id=%s", [data[0][0]])
-    print("Successfully made %s a moderator of %s." % (username, community))
+    print("You have successfully made %s a moderator of Community %s." % (username, community))
     conn.commit()
     conn.close()
     
@@ -267,13 +267,12 @@ def deleteMessageFromChannel(userID, messageID, communityID, channelID):
     cur.execute(sql, [communityID, userID])
     data = cur.fetchall()
     if data[0][0] == False:
-        print("Insufficient permissions to delete messages.")
+        print("User of ID #%s has insufficient permissions to delete messages." % userID)
     else:
         cur.execute("DELETE FROM channels_messages WHERE id = %s", [messageID])
-        print("Successfully deleted message.")
+        print("User of ID #%s has successfully deleted a message." % userID)
     conn.commit()
     conn.close()
-    # Provide checks to see if the user is a moderator of the community
 
 # def createChannel(username, community, newChannelName):
 #     print()
