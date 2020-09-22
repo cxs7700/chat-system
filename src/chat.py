@@ -36,16 +36,6 @@ def buildTables():
             FOREIGN KEY(chname)
                 REFERENCES channels(name)
         );
-
-        CREATE TABLE admins(
-            id              SERIAL PRIMARY KEY NOT NULL,
-            uid             INTEGER UNIQUE,
-            cname           VARCHAR(15) UNIQUE,
-            FOREIGN KEY(cname)
-                REFERENCES communities(name),
-            FOREIGN KEY(uid)
-                REFERENCES users(id)
-        );
         
         INSERT INTO channels (cname, name) VALUES
                 ('SWEN-331', 'General'),
@@ -239,4 +229,33 @@ def editMessage(newMessage, id):
     cur.execute("UPDATE messages SET message=%s WHERE id=%s", (newMessage, id))
     conn.commit()
     conn.close()
+    
+# DB3 CRUD Operations
+def addUserToCommunity(username, email, phone, ssn, community):
+    conn = connect()
+    cur = conn.cursor()
+    createUser(username, email, phone, ssn)
+    sql = """
+        INSERT INTO communities_moderators (community_id, user_id) VALUES
+            SELECT id
+            FROM communities c
+            INNER JOIN
+    """
+    cur.execute(sql)
+    conn.commit()
+    conn.close()
+    
+# def makeModerator(username, community):
+#     print()
+    
+# def deleteMessageFromChannel(username, messageID, community, channel):
+#     print()
+#     # Provide checks to see if the user is a moderator of the community
+
+# def createChannel(username, community, newChannelName):
+#     print()
+#     # Any user can create a channel
+    
+# def createPrivateChannel():
+#     print()
     

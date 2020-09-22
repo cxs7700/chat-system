@@ -9,7 +9,7 @@ class TestChat(unittest.TestCase):
         conn = connect()
         cur = conn.cursor()
         sql = """
-            DROP TABLE IF EXISTS users, messages, communities, channels, communities_channels, admins CASCADE;
+            DROP TABLE IF EXISTS users, messages, communities, channels, communities_channels, communities_users, communities_moderators, channels_messages CASCADE;
             
             CREATE TABLE users(
                 id	            SERIAL PRIMARY KEY NOT NULL,
@@ -27,7 +27,8 @@ class TestChat(unittest.TestCase):
         
             CREATE TABLE channels(
                 id              SERIAL PRIMARY KEY NOT NULL,
-                name            VARCHAR(15) UNIQUE
+                name            VARCHAR(15) UNIQUE,
+                private         BOOLEAN NOT NULL DEFAULT FALSE
             );
             
             CREATE TABLE communities_channels(
@@ -38,23 +39,39 @@ class TestChat(unittest.TestCase):
                 FOREIGN KEY (channel_id) REFERENCES channels(id) ON DELETE CASCADE
             );
             
+            CREATE TABLE communities_users(
+                id              SERIAL PRIMARY KEY NOT NULL,
+                community_id    INTEGER NOT NULL,
+                user_id         INTEGER NOT NULL,
+                FOREIGN KEY (community_id) REFERENCES communities(id) ON DELETE CASCADE,
+                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+            );
+            
+            CREATE TABLE communities_moderators (
+                id              SERIAL PRIMARY KEY NOT NULL,
+                community_id    INTEGER NOT NULL,
+                user_id         INTEGER NOT NULL,
+                FOREIGN KEY (community_id) REFERENCES communities(id) ON DELETE CASCADE,
+                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+            );
+            
             CREATE TABLE messages(
                 id              SERIAL PRIMARY KEY,
                 chname          VARCHAR(15) UNIQUE,
                 message         TEXT NOT NULL,
                 sender          TEXT,
                 receiver        TEXT,
-                year            TEXT,
-                FOREIGN KEY(chname)
-                    REFERENCES channels(name)
+                year            TEXT
             );
-
-            CREATE TABLE admins(
+            
+            CREATE TABLE channels_messages (
                 id              SERIAL PRIMARY KEY NOT NULL,
-                uid             INTEGER UNIQUE,
-                cname           VARCHAR(15) UNIQUE,
-                FOREIGN KEY(cname) REFERENCES communities(name),
-                FOREIGN KEY(uid) REFERENCES users(id)
+                community_id    INTEGER NOT NULL,
+                channel_id      INTEGER NOT NULL,
+                message         TEXT NOT NULL,
+                year            TEXT,
+                FOREIGN KEY (community_id) REFERENCES communities(id) ON DELETE CASCADE,
+                FOREIGN KEY (channel_id) REFERENCES channels(id) ON DELETE CASCADE
             );
         
             INSERT INTO users (username, email, phone, ssn, suspension) VALUES
@@ -84,6 +101,7 @@ class TestChat(unittest.TestCase):
                 ('7', '3', '1'),
                 ('8', '3', '2'),
                 ('9', '3', '3');
+            
         """    
         cur.execute(sql)
         with open('test_data.csv', newline='') as f:
@@ -113,7 +131,7 @@ class TestChat(unittest.TestCase):
     def tearDown(self):
         conn = connect()
         cur = conn.cursor()
-        cur.execute("DROP TABLE IF EXISTS users, messages, communities, channels, communities_channels, admins CASCADE;")
+        cur.execute("DROP TABLE IF EXISTS users, messages, communities, channels, communities_channels, communities_users, communities_moderators, channels_messages CASCADE;")
         conn.commit()
         conn.close()
         
@@ -246,4 +264,45 @@ class TestChat(unittest.TestCase):
         self.assertEqual([(16,)], cur.fetchall(), "Incorrect number of messages.")
         conn.close()
         
-    
+    # # DB3 Test Cases
+    # def test_add_user_to_community(self):
+    #     conn = connect()
+    #     cur = conn.cursor()
+    #     addUserToCommunity("Lex", "lex@gmail.com", "243123823", "987651234", "SWEN-344")
+    #     makeModerator("Lex", "SWEN-344")
+    #     sql = """
+    #         SELECT name FROM users, communities_moderators;
+    #     """
+    #     cur.execute(sql)
+    #     conn.commit()
+    #     self.assertEqual([("Lex",)], cur.fetchall(), "Incorrect name of moderator.")
+    #     conn.close()
+        
+    # def test_delete_message_is_not_mod():
+    #     conn = connect()
+    #     cur = conn.cursor()
+        
+    #     sql = """
+        
+    #     """
+        
+    # def test_lex_delete_message():
+    #     conn = connect()
+    #     cur = conn.cursor()
+    #     sql = """
+        
+    #     """
+        
+    # def test_lex_create_channel():
+    #     conn = connect()
+    #     cur = conn.cursor()
+    #     sql = """
+        
+    #     """
+        
+    # def test_private_channel():
+    #     conn = connect()
+    #     cur = conn.cursor()
+    #     sql = """
+        
+    #     """
