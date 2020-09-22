@@ -265,18 +265,18 @@ class TestChat(unittest.TestCase):
         conn.close()
         
     # # DB3 Test Cases
-    # def test_add_user_to_community(self):
-    #     conn = connect()
-    #     cur = conn.cursor()
-    #     addUserToCommunity("Lex", "lex@gmail.com", "243123823", "987651234", "SWEN-344")
-    #     makeModerator("Lex", "SWEN-344")
-    #     sql = """
-    #         SELECT name FROM users, communities_moderators;
-    #     """
-    #     cur.execute(sql)
-    #     conn.commit()
-    #     self.assertEqual([("Lex",)], cur.fetchall(), "Incorrect name of moderator.")
-    #     conn.close()
+    def test_add_user_to_community(self):
+        conn = connect()
+        cur = conn.cursor()
+        addUserToCommunity("Lex", "lex@gmail.com", "243123823", "987651234", "SWEN-344")
+        makeModerator("Lex", "SWEN-344")
+        sql = """
+            SELECT name FROM users, communities_moderators;
+        """
+        cur.execute(sql)
+        conn.commit()
+        self.assertEqual([("Lex",)], cur.fetchall(), "Incorrect name of moderator.")
+        conn.close()
         
     # def test_delete_message_is_not_mod():
     #     conn = connect()

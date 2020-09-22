@@ -236,17 +236,18 @@ def addUserToCommunity(username, email, phone, ssn, community):
     cur = conn.cursor()
     createUser(username, email, phone, ssn)
     sql = """
-        INSERT INTO communities_moderators (community_id, user_id) VALUES
-            SELECT id
-            FROM communities c
-            INNER JOIN
+        INSERT INTO communities_users (community_id, user_id)
+            SELECT communities.id, users.id
+            FROM communities, users 
+            WHERE users.username=%s AND communities.name=%s
     """
-    cur.execute(sql)
+    cur.execute(sql, (username, community))
+    print("Successfully added user to community SWEN-344.")
     conn.commit()
     conn.close()
     
-# def makeModerator(username, community):
-#     print()
+def makeModerator(username, community):
+    print()
     
 # def deleteMessageFromChannel(username, messageID, community, channel):
 #     print()
