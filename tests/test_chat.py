@@ -39,18 +39,11 @@ class TestChat(unittest.TestCase):
                 FOREIGN KEY (channel_id) REFERENCES channels(id) ON DELETE CASCADE
             );
             
-            CREATE TABLE communities_users(
+            CREATE TABLE communities_users (
                 id              SERIAL PRIMARY KEY NOT NULL,
                 community_id    INTEGER NOT NULL,
                 user_id         INTEGER NOT NULL,
-                FOREIGN KEY (community_id) REFERENCES communities(id) ON DELETE CASCADE,
-                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-            );
-            
-            CREATE TABLE communities_moderators (
-                id              SERIAL PRIMARY KEY NOT NULL,
-                community_id    INTEGER NOT NULL,
-                user_id         INTEGER NOT NULL,
+                isMod           BOOLEAN NOT NULL DEFAULT FALSE,
                 FOREIGN KEY (community_id) REFERENCES communities(id) ON DELETE CASCADE,
                 FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
             );
@@ -269,22 +262,30 @@ class TestChat(unittest.TestCase):
         conn = connect()
         cur = conn.cursor()
         addUserToCommunity("Lex", "lex@gmail.com", "243123823", "987651234", "SWEN-344")
-        makeModerator("Lex", "SWEN-344")
+        makeModerator("SWEN-344", "Lex")
         sql = """
-            SELECT name FROM users, communities_moderators;
+            SELECT username FROM users WHERE id IN (SELECT user_id FROM communities_users WHERE isMod = TRUE);
         """
         cur.execute(sql)
         conn.commit()
         self.assertEqual([("Lex",)], cur.fetchall(), "Incorrect name of moderator.")
         conn.close()
         
-    # def test_delete_message_is_not_mod():
-    #     conn = connect()
-    #     cur = conn.cursor()
-        
-    #     sql = """
-        
-    #     """
+    def test_delete_message_is_not_mod(self):
+        conn = connect()
+        cur = conn.cursor()
+        addUserToCommunity("Taylor", "taylor@gmail.com", "243123823", "987651234", "SWEN-344")
+        cur.execute("SELECT id FROM users WHERE username='Taylor';")
+        userID = cur.fetchall()
+        cur.execute("SELECT id FROM communities WHERE name='SWEN-344';")
+        communityID = cur.fetchall()
+        cur.execute("SELECT id FROM channels WHERE name='General';")
+        channelID = cur.fetchall()
+        deleteMessageFromChannel(userID[0][0], 1, communityID[0][0], channelID[0][0])
+        cur.execute("SELECT COUNT(*) FROM channels_messages")
+        conn.commit()
+        self.assertEqual([(9,)], cur.fetchall(), "Incorrect amount of messages left in the channel.")
+        conn.close()
         
     # def test_lex_delete_message():
     #     conn = connect()

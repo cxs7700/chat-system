@@ -242,16 +242,38 @@ def addUserToCommunity(username, email, phone, ssn, community):
             WHERE users.username=%s AND communities.name=%s
     """
     cur.execute(sql, (username, community))
-    print("Successfully added user to community SWEN-344.")
     conn.commit()
     conn.close()
     
-def makeModerator(username, community):
-    print()
+def makeModerator(community, username):
+    conn = connect()
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM users WHERE username=%s", [username])
+    data = cur.fetchall()
+    if data[0][0] != None:
+        cur.execute("UPDATE communities_users SET isMod=TRUE WHERE user_id=%s", [data[0][0]])
+    print("Successfully made %s a moderator of %s." % (username, community))
+    conn.commit()
+    conn.close()
     
-# def deleteMessageFromChannel(username, messageID, community, channel):
-#     print()
-#     # Provide checks to see if the user is a moderator of the community
+def deleteMessageFromChannel(userID, messageID, communityID, channelID):
+    conn = connect()
+    cur = conn.cursor()
+    sql = """
+        SELECT EXISTS 
+        (SELECT * FROM communities_users 
+        WHERE community_id = %s AND user_id = %s AND isMod = TRUE);
+    """
+    cur.execute(sql, [communityID, userID])
+    data = cur.fetchall()
+    if data[0][0] == False:
+        print("Insufficient permissions to delete messages.")
+    else:
+        cur.execute("DELETE FROM channels_messages WHERE id = %s", [messageID])
+        print("Successfully deleted message.")
+    conn.commit()
+    conn.close()
+    # Provide checks to see if the user is a moderator of the community
 
 # def createChannel(username, community, newChannelName):
 #     print()
