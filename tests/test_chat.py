@@ -9,7 +9,7 @@ class TestChat(unittest.TestCase):
         conn = connect()
         cur = conn.cursor()
         sql = """
-            DROP TABLE IF EXISTS users, messages, communities, channels, privileges, admins CASCADE;
+            DROP TABLE IF EXISTS users, messages, communities, channels, communities_channels, admins CASCADE;
             
             CREATE TABLE users(
                 id	            SERIAL PRIMARY KEY NOT NULL,
@@ -21,15 +21,21 @@ class TestChat(unittest.TestCase):
             );
             
             CREATE TABLE communities(
-                name	        VARCHAR(15) PRIMARY KEY UNIQUE
+                id	            SERIAL PRIMARY KEY NOT NULL,
+                name	        VARCHAR(15) UNIQUE
             );
         
             CREATE TABLE channels(
                 id              SERIAL PRIMARY KEY NOT NULL,
-                cname           VARCHAR(15) UNIQUE,
-                name            VARCHAR(15) UNIQUE,
-                FOREIGN KEY(cname) 
-                    REFERENCES communities(name)
+                name            VARCHAR(15) UNIQUE
+            );
+            
+            CREATE TABLE communities_channels(
+                id              SERIAL PRIMARY KEY,
+                community_id    INTEGER NOT NULL,
+                channel_id      INTEGER NOT NULL,
+                FOREIGN KEY (community_id) REFERENCES communities(id) ON DELETE CASCADE,
+                FOREIGN KEY (channel_id) REFERENCES channels(id) ON DELETE CASCADE
             );
             
             CREATE TABLE messages(
@@ -42,22 +48,13 @@ class TestChat(unittest.TestCase):
                 FOREIGN KEY(chname)
                     REFERENCES channels(name)
             );
-            
-            CREATE TABLE privileges(
-                cname           VARCHAR(15) UNIQUE,
-                role            VARCHAR(11) UNIQUE,
-                FOREIGN KEY(cname)
-                    REFERENCES communities(name)
-            );
-            
+
             CREATE TABLE admins(
                 id              SERIAL PRIMARY KEY NOT NULL,
                 uid             INTEGER UNIQUE,
                 cname           VARCHAR(15) UNIQUE,
-                FOREIGN KEY(cname)
-                    REFERENCES communities(name),
-                FOREIGN KEY(uid)
-                    REFERENCES users(id)
+                FOREIGN KEY(cname) REFERENCES communities(name),
+                FOREIGN KEY(uid) REFERENCES users(id)
             );
         
             INSERT INTO users (username, email, phone, ssn, suspension) VALUES
@@ -65,7 +62,28 @@ class TestChat(unittest.TestCase):
                 ('Costello', 'costello@email.com', '123-456-7890', '123-54-6789', NULL),
                 ('Moe', 'moe@email.com', '123-456-7890', '321-45-6789', NULL),
                 ('Larry', 'larry@email.com', '123-456-7890', '123-45-9876', NULL),
-                ('Curly', 'curly@email.com', '123-456-7890', '012-34-5678', '2060-01-01');     
+                ('Curly', 'curly@email.com', '123-456-7890', '012-34-5678', '2060-01-01');    
+            
+            INSERT INTO communities (id, name) VALUES
+                ('1', 'SWEN-331'),
+                ('2', 'SWEN-440'),
+                ('3', 'SWEN-344');
+            
+            INSERT INTO channels (id, name) VALUES
+                ('1', 'General'),
+                ('2', 'TAs'),
+                ('3', 'Random');
+                
+            INSERT INTO communities_channels (id, community_id, channel_id) VALUES
+                ('1', '1', '1'),
+                ('2', '1', '2'),
+                ('3', '1', '3'),
+                ('4', '2', '1'),
+                ('5', '2', '2'),
+                ('6', '2', '3'),
+                ('7', '3', '1'),
+                ('8', '3', '2'),
+                ('9', '3', '3');
         """    
         cur.execute(sql)
         with open('test_data.csv', newline='') as f:
@@ -85,13 +103,17 @@ class TestChat(unittest.TestCase):
                     (row[0], row[1])
                 )
             f.close()
+            
+        # TODO: Load CSV into each CHANNEL for each COMMUNITY
+        
+        
         conn.commit()
         conn.close()
     
     def tearDown(self):
         conn = connect()
         cur = conn.cursor()
-        cur.execute("DROP TABLE IF EXISTS users, messages, communities, channels, privileges, admins CASCADE;")
+        cur.execute("DROP TABLE IF EXISTS users, messages, communities, channels, communities_channels, admins CASCADE;")
         conn.commit()
         conn.close()
         

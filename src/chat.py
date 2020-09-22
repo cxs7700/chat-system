@@ -14,45 +14,49 @@ def buildTables():
             suspension      TIMESTAMP DEFAULT NULL
         );
         
-        CREATE TABLE messages(
-                id              SERIAL PRIMARY KEY,
-                chname          VARCHAR(15) NOT NULL UNIQUE,
-                message         TEXT NOT NULL,
-                sender          TEXT,
-                receiver        TEXT,
-                year            TEXT,
-                FOREIGN KEY(chname)
-                    REFERENCES channels(name)
-            );
-        
         CREATE TABLE communities(
-            name	        VARCHAR(15) PRIMARY KEY NOT NULL UNIQUE
-        );
+                name	        VARCHAR(15) PRIMARY KEY UNIQUE
+            );
         
         CREATE TABLE channels(
             id              SERIAL PRIMARY KEY NOT NULL,
-            cname           VARCHAR(15) NOT NULL UNIQUE,
-            name            VARCHAR(15) NOT NULL UNIQUE,
+            cname           VARCHAR(15) UNIQUE,
+            name            VARCHAR(15) UNIQUE,
             FOREIGN KEY(cname) 
                 REFERENCES communities(name)
         );
         
-        CREATE TABLE privileges(
-            cname           VARCHAR(15) NOT NULL UNIQUE,
-            role            VARCHAR(11) NOT NULL UNIQUE,
-            FOREIGN KEY(cname)
-                REFERENCES communities(name)
+        CREATE TABLE messages(
+            id              SERIAL PRIMARY KEY,
+            chname          VARCHAR(15) UNIQUE,
+            message         TEXT NOT NULL,
+            sender          TEXT,
+            receiver        TEXT,
+            year            TEXT,
+            FOREIGN KEY(chname)
+                REFERENCES channels(name)
         );
-        
+
         CREATE TABLE admins(
             id              SERIAL PRIMARY KEY NOT NULL,
-            uid             INTEGER NOT NULL UNIQUE,
-            cname           VARCHAR(15) NOT NULL UNIQUE,
+            uid             INTEGER UNIQUE,
+            cname           VARCHAR(15) UNIQUE,
             FOREIGN KEY(cname)
                 REFERENCES communities(name),
             FOREIGN KEY(uid)
                 REFERENCES users(id)
         );
+        
+        INSERT INTO channels (cname, name) VALUES
+                ('SWEN-331', 'General'),
+                ('SWEN-440', 'TAs'),
+                ('SWEN-344', 'Random'),
+                ('SWEN-331', 'General'),
+                ('SWEN-440', 'TAs'),
+                ('SWEN-344', 'Random'),
+                ('SWEN-331', 'General'),
+                ('SWEN-440', 'TAs'),
+                ('SWEN-344', 'Random');
     """
     cur.execute(sql)
     conn.commit() 
