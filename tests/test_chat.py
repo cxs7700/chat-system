@@ -27,8 +27,8 @@ class TestChat(unittest.TestCase):
         
             CREATE TABLE channels(
                 id              SERIAL PRIMARY KEY NOT NULL,
-                name            VARCHAR(15) UNIQUE,
-                private         BOOLEAN NOT NULL DEFAULT FALSE
+                name            VARCHAR(20) UNIQUE,
+                is_private      BOOLEAN DEFAULT FALSE
             );
             
             CREATE TABLE communities_channels(
@@ -74,29 +74,30 @@ class TestChat(unittest.TestCase):
                 ('Larry', 'larry@email.com', '123-456-7890', '123-45-9876', NULL),
                 ('Curly', 'curly@email.com', '123-456-7890', '012-34-5678', '2060-01-01');    
             
-            INSERT INTO communities (id, name) VALUES
-                ('1', 'SWEN-331'),
-                ('2', 'SWEN-440'),
-                ('3', 'SWEN-344');
+            INSERT INTO communities (name) VALUES
+                ('SWEN-331'),
+                ('SWEN-440'),
+                ('SWEN-344');
             
-            INSERT INTO channels (id, name) VALUES
-                ('1', 'General'),
-                ('2', 'TAs'),
-                ('3', 'Random');
+            INSERT INTO channels (name) VALUES
+                ('General'),
+                ('TAs'),
+                ('Random');
                 
-            INSERT INTO communities_channels (id, community_id, channel_id) VALUES
-                ('1', '1', '1'),
-                ('2', '1', '2'),
-                ('3', '1', '3'),
-                ('4', '2', '1'),
-                ('5', '2', '2'),
-                ('6', '2', '3'),
-                ('7', '3', '1'),
-                ('8', '3', '2'),
-                ('9', '3', '3');
+            INSERT INTO communities_channels (community_id, channel_id) VALUES
+                ('1', '1'),
+                ('1', '2'),
+                ('1', '3'),
+                ('2', '1'),
+                ('2', '2'),
+                ('2', '3'),
+                ('3', '1'),
+                ('3', '2'),
+                ('3', '3');
             
         """    
         cur.execute(sql)
+        
         with open('test_data.csv', newline='') as f:
             data = csv.reader(f, delimiter=',', quotechar='"')
             for row in data:
@@ -115,7 +116,6 @@ class TestChat(unittest.TestCase):
                 )
             f.close()
             
-        # TODO: Load CSV into each CHANNEL for each COMMUNITY
         with open('db3_populate_channels.csv', newline='') as f:
             data = csv.reader(f, delimiter=',', quotechar='"')
             for row in data:
@@ -310,12 +310,29 @@ class TestChat(unittest.TestCase):
         self.assertEqual([(90,)], cur.fetchall(), "Incorrect amount of messages left in the channel.")
         conn.close()
         
-    # def test_lex_create_channel(self):
-    #     conn = connect()
-    #     cur = conn.cursor()
-    #     sql = """
-        
-    #     """
+    def test_create_channel(self):
+        conn = connect()
+        cur = conn.cursor()
+        addUserToCommunity("Lex", "lex@gmail.com", "243123823", "987651234", "SWEN-344")
+        cur.execute("SELECT id FROM users WHERE username='Lex';")
+        userID = cur.fetchall()
+        createChannel(userID[0][0], "SWEN-344", "Kill_Superman")
+        createChannel(userID[0][0], "SWEN-440", "Kill_Superman")
+        cur.execute("SELECT id FROM communities WHERE name='SWEN-344';")
+        community1 = cur.fetchall()
+        cur.execute("SELECT id FROM communities WHERE name='SWEN-440';")
+        community2 = cur.fetchall()
+        cur.execute("SELECT id FROM channels WHERE name='Kill_Superman';")
+        channelID = cur.fetchall()
+        sql = """
+            SELECT COUNT(*) 
+            FROM communities_channels 
+            WHERE (community_id=%s OR community_id=%s) AND channel_id=%s;
+        """
+        cur.execute(sql, [community1[0][0], community2[0][0], channelID[0][0]])
+        self.assertEqual([(2,)], cur.fetchall(), "Incorrect amount of channels.")
+        conn.commit()
+        conn.close()
         
     # def test_private_channel(self):
     #     conn = connect()

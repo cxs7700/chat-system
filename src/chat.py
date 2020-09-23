@@ -195,9 +195,9 @@ def sendMessage(sender, receiver, message, year):
     cur.execute("SELECT suspension FROM users WHERE username=%s", [sender])
     data = cur.fetchall()
     if data[0][0] != None:
-        print("User is suspended from sending messages. The suspension ends on:", data[0][0])
+        print("\nUser is suspended from sending messages. The suspension ends on:", data[0][0])
     else:
-        print("Message sent successfully.")
+        print("\nMessage sent successfully.")
         cur.execute("INSERT INTO messages (message, sender, receiver, year) VALUES (%s, %s, %s, %s);", (message, sender, receiver, year))
     conn.commit()
     conn.close()
@@ -252,7 +252,7 @@ def makeModerator(community, username):
     data = cur.fetchall()
     if data[0][0] != None:
         cur.execute("UPDATE communities_users SET isMod=TRUE WHERE user_id=%s", [data[0][0]])
-    print("You have successfully made %s a moderator of Community %s." % (username, community))
+    print("\nYou have successfully made %s a moderator of Community %s." % (username, community))
     conn.commit()
     conn.close()
     
@@ -267,17 +267,34 @@ def deleteMessageFromChannel(userID, messageID, communityID, channelID):
     cur.execute(sql, [communityID, userID])
     data = cur.fetchall()
     if data[0][0] == False:
-        print("User of ID #%s has insufficient permissions to delete messages." % userID)
+        print("\nUser of ID #%s has insufficient permissions to delete messages." % userID)
     else:
         cur.execute("DELETE FROM channels_messages WHERE id = %s", [messageID])
-        print("User of ID #%s has successfully deleted a message." % userID)
+        print("\nUser of ID #%s has successfully deleted a message." % userID)
     conn.commit()
     conn.close()
 
-# def createChannel(username, community, newChannelName):
-#     print()
-#     # Any user can create a channel
-    
+def createChannel(userID, community, newChannelName):
+    conn = connect()
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM users WHERE id=%s", [userID])
+    data = cur.fetchall()
+    if data[0][0] != None:
+        cur.execute("SELECT id FROM communities WHERE name = %s;", [community])
+        cid = cur.fetchall()
+        cur.execute("SELECT COUNT(*) FROM channels WHERE name = %s;", [newChannelName])
+        total = cur.fetchall()
+        if (total[0][0] < 1):
+            cur.execute("INSERT INTO channels (name) VALUES (%s);", [newChannelName])
+        cur.execute("SELECT id FROM channels WHERE name = %s;", [newChannelName])
+        chid = cur.fetchall()
+        cur.execute("INSERT INTO communities_channels (community_id, channel_id) VALUES (%s, %s);", (cid[0][0], chid[0][0]))
+        print("\nUser of ID #%s has successfully created channel %s in %s" % (userID, newChannelName, community))
+    else: 
+        print("\nUser is not a user in the system and cannot create a channel.")
+    conn.commit()
+    conn.close()
+        
 # def createPrivateChannel():
 #     print()
     
