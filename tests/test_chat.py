@@ -331,21 +331,21 @@ class TestChat(unittest.TestCase):
             WHERE (community_id=%s OR community_id=%s) AND channel_id=%s;
         """
         cur.execute(sql, [community1[0][0], community2[0][0], channelID[0][0]])
-        self.assertEqual([(2,)], cur.fetchall(), "Incorrect amount of channels.")
+        self.assertEqual([(1,)], cur.fetchall(), "Incorrect amount of channels.")
         conn.commit()
         conn.close()
         
-    # def test_private_channel(self):
-    #     conn = connect()
-    #     cur = conn.cursor()
-    #     # add user
-    #     addUserToCommunity("i_told_u_1nce", "lex@gmail.com", "243123823", "987651234", "SWEN-344")
-    #     cur.execute("SELECT id FROM users WHERE username='i_told_u_1nce';")
-    #     userID = cur.fetchall()
-    #     # create private channel
-    #     createChannel(userID[0][0], "SWEN-344", "Argument Clinic", True)
-    #     sql = """
+    def test_private_channel(self):
+        conn = connect()
+        cur = conn.cursor()
+        # add user
+        addUserToCommunity("i_told_u_1nce", "lex@gmail.com", "243123823", "987651234", "SWEN-344")
+        cur.execute("SELECT id FROM users WHERE username='i_told_u_1nce';")
+        userID = cur.fetchall()
+        # create private channel
+        createChannel(userID[0][0], "SWEN-344", "Argument Clinic", True)
+        sql = """
             
-    #     """
-    #     conn.commit()
-    #     conn.close()
+        """
+        conn.commit()
+        conn.close()
