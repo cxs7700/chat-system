@@ -9,7 +9,7 @@ class TestChat(unittest.TestCase):
         conn = connect()
         cur = conn.cursor()
         sql = """
-            DROP TABLE IF EXISTS users, messages, communities, channels, communities_channels, communities_users, communities_moderators, channels_messages CASCADE;
+            DROP TABLE IF EXISTS users, messages, communities, channels, communities_channels, communities_users, communities_moderators, channels_messages, channels_users CASCADE;
             
             CREATE TABLE users(
                 id	            SERIAL PRIMARY KEY NOT NULL,
@@ -29,6 +29,14 @@ class TestChat(unittest.TestCase):
                 id              SERIAL PRIMARY KEY NOT NULL,
                 name            VARCHAR(20) UNIQUE,
                 is_private      BOOLEAN DEFAULT FALSE
+            );
+            
+            CREATE TABLE channels_users (
+                id              SERIAL PRIMARY KEY NOT NULL,
+                user_id         INTEGER NOT NULL,
+                channel_id      INTEGER NOT NULL,
+                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+                FOREIGN KEY (channel_id) REFERENCES channels(id) ON DELETE CASCADE
             );
             
             CREATE TABLE communities_channels(
@@ -131,7 +139,7 @@ class TestChat(unittest.TestCase):
     def tearDown(self):
         conn = connect()
         cur = conn.cursor()
-        cur.execute("DROP TABLE IF EXISTS users, messages, communities, channels, communities_channels, communities_users, communities_moderators, channels_messages CASCADE;")
+        cur.execute("DROP TABLE IF EXISTS users, messages, communities, channels, communities_channels, communities_users, communities_moderators, channels_messages, channels_users CASCADE;")
         conn.commit()
         conn.close()
         
@@ -338,14 +346,21 @@ class TestChat(unittest.TestCase):
     def test_private_channel(self):
         conn = connect()
         cur = conn.cursor()
-        # add user
         addUserToCommunity("i_told_u_1nce", "lex@gmail.com", "243123823", "987651234", "SWEN-344")
         cur.execute("SELECT id FROM users WHERE username='i_told_u_1nce';")
-        userID = cur.fetchall()
-        # create private channel
-        createChannel(userID[0][0], "SWEN-344", "Argument Clinic", True)
-        sql = """
-            
-        """
+        user1 = cur.fetchall()
+        makeModerator("SWEN-344", "i_told_u_1nce")
+        createChannel(user1[0][0], "SWEN-344", "Argument Clinic", True)
+        cur.execute("SELECT id FROM channels WHERE name = 'Argument Clinic';")
+        chid = cur.fetchall()
+        cur.execute("INSERT INTO channels_messages (community_id, channel_id, message, year) VALUES ('3', %s, 'that was never five minutes just now', '2020');", [chid[0][0]])
+        addUserToCommunity("ReallyItsJohnCleese", "rijc@gmail.com", "1029384", "381948460", "SWEN-344")
+        addUserToCommunity("ICameHereForAnArgument", "ichfaa@gmail.com", "2891641", "018277389", "SWEN-344")
+        cur.execute("SELECT id FROM users WHERE username='ReallyItsJohnCleese';")
+        user2 = cur.fetchall()
+        cur.execute("SELECT id FROM users WHERE username='ICameHereForAnArgument';")
+        user3 = cur.fetchall()
+        cur.execute("SELECT message FROM channels_messages WHERE community_id = 3 AND channel_id=%s;", [chid[0][0]])
+        self.assertEqual([('that was never five minutes just now',)], cur.fetchall(), "Message cannot be read.")
         conn.commit()
         conn.close()

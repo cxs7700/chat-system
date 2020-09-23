@@ -258,8 +258,12 @@ def addUserToCommunity(username, email, phone, ssn, community):
     conn.commit()
     conn.close()
     
-def addUserToChannel():
-    print()
+def addUserToChannel(userID, ownerID, channelID):
+    conn = connect()
+    cur = conn.cursor()
+    cur.execute("INSERT INTO channels_users (user_id, channel_id) VALUES (%s, %s);", [userID, channelID])
+    conn.commit()
+    conn.close()
     
 def makeModerator(community, username):
     conn = connect()
@@ -283,7 +287,7 @@ def deleteMessageFromChannel(userID, messageID, communityID, channelID):
     cur.execute(sql, [communityID, userID])
     data = cur.fetchall()
     if data[0][0] == False:
-        print("\nUser of ID #%s has insufficient permissions to delete messages." % userID)
+        print("\nUser of ID #%s (not Lex) has insufficient permissions to delete messages." % userID)
     else:
         cur.execute("DELETE FROM channels_messages WHERE id = %s", [messageID])
         print("\nUser of ID #%s has successfully deleted a message." % userID)
@@ -314,8 +318,8 @@ def createChannel(userID, community, newChannelName, isPrivate):
         cur.execute("SELECT id FROM channels WHERE name = %s;", [newChannelName])
         chid = cur.fetchall()
         cur.execute("INSERT INTO communities_channels (community_id, channel_id) VALUES (%s, %s);", (cid[0][0], chid[0][0]))
-        print("\nUser of ID #%s has successfully created channel %s in %s" % (userID, newChannelName, community))
+        print("\nUser of ID #%s has successfully created channel %s in community %s" % (userID, newChannelName, community))
     else: 
-        print("\nUser of ID #%s has insufficient permissions to create a channel in this community." % userID)
+        print("\nUser of ID #%s has insufficient permissions to create channel %s in community %s." % (userID, newChannelName, community))
     conn.commit()
     conn.close()
