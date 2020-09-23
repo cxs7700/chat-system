@@ -293,18 +293,9 @@ def deleteMessageFromChannel(userID, messageID, communityID, channelID):
 def createChannel(userID, community, newChannelName, isPrivate):
     conn = connect()
     cur = conn.cursor()
-    cur.execute("SELECT id FROM communities WHERE name = %s;", [community])
-    cid = cur.fetchall()
-    sql = """
-        SELECT EXISTS 
-        (SELECT * FROM communities_users 
-        WHERE community_id = %s AND user_id = %s AND isMod = TRUE);
-    """
-    cur.execute(sql, [cid[0][0], userID])
-    isMod = cur.fetchall()
     cur.execute("SELECT * FROM users WHERE id=%s", [userID])
     data = cur.fetchall()
-    if data[0][0] != None and isMod[0][0] == True:
+    if data[0][0] != None:
         cur.execute("SELECT id FROM communities WHERE name = %s;", [community])
         cid = cur.fetchall()
         cur.execute("SELECT COUNT(*) FROM channels WHERE name = %s;", [newChannelName])
