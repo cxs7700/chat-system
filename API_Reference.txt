@@ -171,3 +171,58 @@ editMessage:
     - Complete unrestricted access
   - N/A
   
+addUserToCommunity:
+  - Adds a new user to a community
+  - Arguments:
+    - username - account username
+    - email - email address 
+    - phone - phone number
+    - ssn - social security number
+    - community - community name
+  - Access Control Assumptions:
+    - New users or admin can choose which community they want to be in.
+  - N/A 
+  
+addUserToChannel:
+  - Adds a user to a channel.
+  - Arguments:
+    - userID - user's id
+    - ownerID - channel owner's id
+    - channelID - channel id
+  - Access Control Assumptions:
+    - Access granted for any user to add as long as they are part of that community and channel
+    - User being added is actually a registered user in the system.
+  - N/A 
+
+makeModerator:
+  - Allows a user to be able to create channels, delete other people's messages,
+    and suspend accounts.
+  - Arguments:
+    - 
+  - Access Control Assumptions:
+    - 
+  - N/A 
+
+deleteMessageFromChannel:
+  - Deletes a message from a channel.
+  - Arguments:
+    - userID - user id
+    - messageID - message id
+    - communityID - community id
+    - channelID - channel id
+  - Access Control Assumptions:
+    - Access granted for moderators to delete messages from a channel.
+  - N/A 
+
+createChannel:
+  - Creates a channel in a community.
+  - Arguments:
+    - userID - user's id
+    - community - community name as a string
+    - newChannelName - name of channel to be added into the database
+    - isPrivate - boolean value for if the channel is private or not
+  - Access Control Assumptions:
+    - Access granted for moderators to make channels in their own community.
+    - User who wants to make the channel is actually a registered user in the system.
+  - N/A 
+  
