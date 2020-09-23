@@ -13,7 +13,7 @@ class TestChat(unittest.TestCase):
             
             CREATE TABLE users(
                 id	            SERIAL PRIMARY KEY NOT NULL,
-                username        VARCHAR(20) UNIQUE NOT NULL,
+                username        VARCHAR(25) UNIQUE NOT NULL,
                 email           TEXT NOT NULL UNIQUE,
                 phone           TEXT NOT NULL,
                 ssn             VARCHAR(11) NOT NULL UNIQUE,
@@ -314,10 +314,11 @@ class TestChat(unittest.TestCase):
         conn = connect()
         cur = conn.cursor()
         addUserToCommunity("Lex", "lex@gmail.com", "243123823", "987651234", "SWEN-344")
+        makeModerator("SWEN-344", "Lex")
         cur.execute("SELECT id FROM users WHERE username='Lex';")
         userID = cur.fetchall()
-        createChannel(userID[0][0], "SWEN-344", "Kill_Superman")
-        createChannel(userID[0][0], "SWEN-440", "Kill_Superman")
+        createChannel(userID[0][0], "SWEN-344", "Kill_Superman", False)
+        createChannel(userID[0][0], "SWEN-440", "Kill_Superman", False)
         cur.execute("SELECT id FROM communities WHERE name='SWEN-344';")
         community1 = cur.fetchall()
         cur.execute("SELECT id FROM communities WHERE name='SWEN-440';")
@@ -330,13 +331,21 @@ class TestChat(unittest.TestCase):
             WHERE (community_id=%s OR community_id=%s) AND channel_id=%s;
         """
         cur.execute(sql, [community1[0][0], community2[0][0], channelID[0][0]])
-        self.assertEqual([(2,)], cur.fetchall(), "Incorrect amount of channels.")
+        self.assertEqual([(1,)], cur.fetchall(), "Incorrect amount of channels.")
         conn.commit()
         conn.close()
         
-    # def test_private_channel(self):
-    #     conn = connect()
-    #     cur = conn.cursor()
-    #     sql = """
-        
-    #     """
+    def test_private_channel(self):
+        conn = connect()
+        cur = conn.cursor()
+        # add user
+        addUserToCommunity("i_told_u_1nce", "lex@gmail.com", "243123823", "987651234", "SWEN-344")
+        cur.execute("SELECT id FROM users WHERE username='i_told_u_1nce';")
+        userID = cur.fetchall()
+        # create private channel
+        createChannel(userID[0][0], "SWEN-344", "Argument Clinic", True)
+        sql = """
+            
+        """
+        conn.commit()
+        conn.close()
