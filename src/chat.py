@@ -6,20 +6,59 @@ def buildTables():
     
     sql = """
         CREATE TABLE users(
+                id	            SERIAL PRIMARY KEY NOT NULL,
+                username        VARCHAR(25) UNIQUE NOT NULL,
+                email           TEXT NOT NULL UNIQUE,
+                phone           TEXT NOT NULL,
+                ssn             VARCHAR(11) NOT NULL UNIQUE,
+                suspension      TIMESTAMP DEFAULT NULL
+            );
+            
+        CREATE TABLE communities(
             id	            SERIAL PRIMARY KEY NOT NULL,
-            username        VARCHAR(20) UNIQUE NOT NULL,
-            email           TEXT NOT NULL UNIQUE,
-            phone           TEXT NOT NULL,
-            ssn             VARCHAR(11) NOT NULL UNIQUE,
-            suspension      TIMESTAMP DEFAULT NULL
+            name	        VARCHAR(15) UNIQUE
+        );
+    
+        CREATE TABLE channels(
+            id              SERIAL PRIMARY KEY NOT NULL,
+            name            VARCHAR(20) UNIQUE,
+            is_private      BOOLEAN DEFAULT FALSE
+        );
+        
+        CREATE TABLE communities_channels(
+            id              SERIAL PRIMARY KEY,
+            community_id    INTEGER NOT NULL,
+            channel_id      INTEGER NOT NULL,
+            FOREIGN KEY (community_id) REFERENCES communities(id) ON DELETE CASCADE,
+            FOREIGN KEY (channel_id) REFERENCES channels(id) ON DELETE CASCADE
+        );
+        
+        CREATE TABLE communities_users (
+            id              SERIAL PRIMARY KEY NOT NULL,
+            community_id    INTEGER NOT NULL,
+            user_id         INTEGER NOT NULL,
+            isMod           BOOLEAN NOT NULL DEFAULT FALSE,
+            FOREIGN KEY (community_id) REFERENCES communities(id) ON DELETE CASCADE,
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
         );
         
         CREATE TABLE messages(
             id              SERIAL PRIMARY KEY,
+            chname          VARCHAR(15) UNIQUE,
             message         TEXT NOT NULL,
             sender          TEXT,
             receiver        TEXT,
             year            TEXT
+        );
+        
+        CREATE TABLE channels_messages (
+            id              SERIAL PRIMARY KEY NOT NULL,
+            community_id    INTEGER NOT NULL,
+            channel_id      INTEGER NOT NULL,
+            message         TEXT NOT NULL,
+            year            TEXT,
+            FOREIGN KEY (community_id) REFERENCES communities(id) ON DELETE CASCADE,
+            FOREIGN KEY (channel_id) REFERENCES channels(id) ON DELETE CASCADE
         );
     """
     cur.execute(sql)
@@ -169,9 +208,9 @@ def sendMessage(sender, receiver, message, year):
     cur.execute("SELECT suspension FROM users WHERE username=%s", [sender])
     data = cur.fetchall()
     if data[0][0] != None:
-        print("User is suspended from sending messages. The suspension ends on:", data[0][0])
+        print("\nUser is suspended from sending messages. The suspension ends on:", data[0][0])
     else:
-        print("Message sent successfully.")
+        print("\nMessage sent successfully.")
         cur.execute("INSERT INTO messages (message, sender, receiver, year) VALUES (%s, %s, %s, %s);", (message, sender, receiver, year))
     conn.commit()
     conn.close()
@@ -204,3 +243,83 @@ def editMessage(newMessage, id):
     conn.commit()
     conn.close()
     
+# DB3 CRUD Operations
+def addUserToCommunity(username, email, phone, ssn, community):
+    conn = connect()
+    cur = conn.cursor()
+    createUser(username, email, phone, ssn)
+    sql = """
+        INSERT INTO communities_users (community_id, user_id)
+            SELECT communities.id, users.id
+            FROM communities, users 
+            WHERE users.username=%s AND communities.name=%s
+    """
+    cur.execute(sql, (username, community))
+    conn.commit()
+    conn.close()
+    
+def addUserToChannel(userID, ownerID, channelID):
+    conn = connect()
+    cur = conn.cursor()
+    cur.execute("INSERT INTO channels_users (user_id, channel_id) VALUES (%s, %s);", [userID, channelID])
+    conn.commit()
+    conn.close()
+    
+def makeModerator(community, username):
+    conn = connect()
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM users WHERE username=%s", [username])
+    data = cur.fetchall()
+    if data[0][0] != None:
+        cur.execute("UPDATE communities_users SET isMod=TRUE WHERE user_id=%s", [data[0][0]])
+    print("\nYou have successfully made %s a moderator of Community %s." % (username, community))
+    conn.commit()
+    conn.close()
+    
+def deleteMessageFromChannel(userID, messageID, communityID, channelID):
+    conn = connect()
+    cur = conn.cursor()
+    sql = """
+        SELECT EXISTS 
+        (SELECT * FROM communities_users 
+        WHERE community_id = %s AND user_id = %s AND isMod = TRUE);
+    """
+    cur.execute(sql, [communityID, userID])
+    data = cur.fetchall()
+    if data[0][0] == False:
+        print("\nUser of ID #%s (not Lex) has insufficient permissions to delete messages." % userID)
+    else:
+        cur.execute("DELETE FROM channels_messages WHERE id = %s", [messageID])
+        print("\nUser of ID #%s has successfully deleted a message." % userID)
+    conn.commit()
+    conn.close()
+
+def createChannel(userID, community, newChannelName, isPrivate):
+    conn = connect()
+    cur = conn.cursor()
+    cur.execute("SELECT id FROM communities WHERE name = %s;", [community])
+    cid = cur.fetchall()
+    sql = """
+        SELECT EXISTS 
+        (SELECT * FROM communities_users 
+        WHERE community_id = %s AND user_id = %s AND isMod = TRUE);
+    """
+    cur.execute(sql, [cid[0][0], userID])
+    isMod = cur.fetchall()
+    cur.execute("SELECT * FROM users WHERE id=%s", [userID])
+    data = cur.fetchall()
+    if data[0][0] != None and isMod[0][0] == True:
+        cur.execute("SELECT id FROM communities WHERE name = %s;", [community])
+        cid = cur.fetchall()
+        cur.execute("SELECT COUNT(*) FROM channels WHERE name = %s;", [newChannelName])
+        total = cur.fetchall()
+        if (total[0][0] < 1): # checks if there is already a channel with the same name
+            cur.execute("INSERT INTO channels (name, is_private) VALUES (%s, %s);", [newChannelName, isPrivate])
+        cur.execute("SELECT id FROM channels WHERE name = %s;", [newChannelName])
+        chid = cur.fetchall()
+        cur.execute("INSERT INTO communities_channels (community_id, channel_id) VALUES (%s, %s);", (cid[0][0], chid[0][0]))
+        print("\nUser of ID #%s has successfully created channel %s in community %s" % (userID, newChannelName, community))
+    else: 
+        print("\nUser of ID #%s has insufficient permissions to create channel %s in community %s." % (userID, newChannelName, community))
+    conn.commit()
+    conn.close()

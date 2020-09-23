@@ -9,21 +9,70 @@ class TestChat(unittest.TestCase):
         conn = connect()
         cur = conn.cursor()
         sql = """
+            DROP TABLE IF EXISTS users, messages, communities, channels, communities_channels, communities_users, communities_moderators, channels_messages, channels_users CASCADE;
+            
             CREATE TABLE users(
                 id	            SERIAL PRIMARY KEY NOT NULL,
-                username        VARCHAR(20) UNIQUE NOT NULL,
+                username        VARCHAR(25) UNIQUE NOT NULL,
                 email           TEXT NOT NULL UNIQUE,
                 phone           TEXT NOT NULL,
                 ssn             VARCHAR(11) NOT NULL UNIQUE,
                 suspension      TIMESTAMP DEFAULT NULL
             );
+            
+            CREATE TABLE communities(
+                id	            SERIAL PRIMARY KEY NOT NULL,
+                name	        VARCHAR(15) UNIQUE
+            );
         
+            CREATE TABLE channels(
+                id              SERIAL PRIMARY KEY NOT NULL,
+                name            VARCHAR(20) UNIQUE,
+                is_private      BOOLEAN DEFAULT FALSE
+            );
+            
+            CREATE TABLE channels_users (
+                id              SERIAL PRIMARY KEY NOT NULL,
+                user_id         INTEGER NOT NULL,
+                channel_id      INTEGER NOT NULL,
+                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+                FOREIGN KEY (channel_id) REFERENCES channels(id) ON DELETE CASCADE
+            );
+            
+            CREATE TABLE communities_channels(
+                id              SERIAL PRIMARY KEY,
+                community_id    INTEGER NOT NULL,
+                channel_id      INTEGER NOT NULL,
+                FOREIGN KEY (community_id) REFERENCES communities(id) ON DELETE CASCADE,
+                FOREIGN KEY (channel_id) REFERENCES channels(id) ON DELETE CASCADE
+            );
+            
+            CREATE TABLE communities_users (
+                id              SERIAL PRIMARY KEY NOT NULL,
+                community_id    INTEGER NOT NULL,
+                user_id         INTEGER NOT NULL,
+                isMod           BOOLEAN NOT NULL DEFAULT FALSE,
+                FOREIGN KEY (community_id) REFERENCES communities(id) ON DELETE CASCADE,
+                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+            );
+            
             CREATE TABLE messages(
                 id              SERIAL PRIMARY KEY,
+                chname          VARCHAR(15) UNIQUE,
                 message         TEXT NOT NULL,
                 sender          TEXT,
                 receiver        TEXT,
                 year            TEXT
+            );
+            
+            CREATE TABLE channels_messages (
+                id              SERIAL PRIMARY KEY NOT NULL,
+                community_id    INTEGER NOT NULL,
+                channel_id      INTEGER NOT NULL,
+                message         TEXT NOT NULL,
+                year            TEXT,
+                FOREIGN KEY (community_id) REFERENCES communities(id) ON DELETE CASCADE,
+                FOREIGN KEY (channel_id) REFERENCES channels(id) ON DELETE CASCADE
             );
         
             INSERT INTO users (username, email, phone, ssn, suspension) VALUES
@@ -31,9 +80,32 @@ class TestChat(unittest.TestCase):
                 ('Costello', 'costello@email.com', '123-456-7890', '123-54-6789', NULL),
                 ('Moe', 'moe@email.com', '123-456-7890', '321-45-6789', NULL),
                 ('Larry', 'larry@email.com', '123-456-7890', '123-45-9876', NULL),
-                ('Curly', 'curly@email.com', '123-456-7890', '012-34-5678', '2060-01-01');     
+                ('Curly', 'curly@email.com', '123-456-7890', '012-34-5678', '2060-01-01');    
+            
+            INSERT INTO communities (name) VALUES
+                ('SWEN-331'),
+                ('SWEN-440'),
+                ('SWEN-344');
+            
+            INSERT INTO channels (name) VALUES
+                ('General'),
+                ('TAs'),
+                ('Random');
+                
+            INSERT INTO communities_channels (community_id, channel_id) VALUES
+                ('1', '1'),
+                ('1', '2'),
+                ('1', '3'),
+                ('2', '1'),
+                ('2', '2'),
+                ('2', '3'),
+                ('3', '1'),
+                ('3', '2'),
+                ('3', '3');
+            
         """    
         cur.execute(sql)
+        
         with open('test_data.csv', newline='') as f:
             data = csv.reader(f, delimiter=',', quotechar='"')
             for row in data:
@@ -51,13 +123,23 @@ class TestChat(unittest.TestCase):
                     (row[0], row[1])
                 )
             f.close()
+            
+        with open('db3_populate_channels.csv', newline='') as f:
+            data = csv.reader(f, delimiter=',', quotechar='"')
+            for row in data:
+                cur.execute(
+                    "INSERT INTO channels_messages (community_id, channel_id, message, year) VALUES (%s, %s, %s, %s);",
+                    (row[0], row[1], row[2], row[3])
+                )
+            f.close()
+        
         conn.commit()
         conn.close()
     
     def tearDown(self):
         conn = connect()
         cur = conn.cursor()
-        cur.execute("DROP TABLE IF EXISTS users, messages;")
+        cur.execute("DROP TABLE IF EXISTS users, messages, communities, channels, communities_channels, communities_users, communities_moderators, channels_messages, channels_users CASCADE;")
         conn.commit()
         conn.close()
         
@@ -190,4 +272,95 @@ class TestChat(unittest.TestCase):
         self.assertEqual([(16,)], cur.fetchall(), "Incorrect number of messages.")
         conn.close()
         
-    
+    # # DB3 Test Cases
+    def test_add_user_to_community(self):
+        conn = connect()
+        cur = conn.cursor()
+        addUserToCommunity("Lex", "lex@gmail.com", "243123823", "987651234", "SWEN-344")
+        makeModerator("SWEN-344", "Lex")
+        sql = """
+            SELECT username FROM users WHERE id IN (SELECT user_id FROM communities_users WHERE isMod = TRUE);
+        """
+        cur.execute(sql)
+        conn.commit()
+        self.assertEqual([("Lex",)], cur.fetchall(), "Incorrect name of moderator.")
+        conn.close()
+        
+    def test_delete_message_is_not_mod(self):
+        conn = connect()
+        cur = conn.cursor()
+        addUserToCommunity("Taylor", "taylor@gmail.com", "243123823", "987651234", "SWEN-344")
+        cur.execute("SELECT id FROM users WHERE username='Taylor';")
+        userID = cur.fetchall()
+        cur.execute("SELECT id FROM communities WHERE name='SWEN-344';")
+        communityID = cur.fetchall()
+        cur.execute("SELECT id FROM channels WHERE name='General';")
+        channelID = cur.fetchall()
+        deleteMessageFromChannel(userID[0][0], 1, communityID[0][0], channelID[0][0])
+        cur.execute("SELECT COUNT(*) FROM channels_messages")
+        conn.commit()
+        self.assertEqual([(90,)], cur.fetchall(), "Incorrect amount of messages left in the channel.")
+        conn.close()
+        
+    def test_lex_delete_message(self):
+        conn = connect()
+        cur = conn.cursor()
+        addUserToCommunity("Lex", "lex@gmail.com", "243123823", "987651234", "SWEN-344")
+        cur.execute("SELECT id FROM users WHERE username='Lex';")
+        userID = cur.fetchall()
+        cur.execute("SELECT id FROM communities WHERE name='SWEN-331';")
+        communityID = cur.fetchall()
+        cur.execute("SELECT id FROM channels WHERE name='General';")
+        channelID = cur.fetchall()
+        deleteMessageFromChannel(userID[0][0], 1, communityID[0][0], channelID[0][0])
+        cur.execute("SELECT COUNT(*) FROM channels_messages")
+        conn.commit()
+        self.assertEqual([(90,)], cur.fetchall(), "Incorrect amount of messages left in the channel.")
+        conn.close()
+        
+    def test_create_channel(self):
+        conn = connect()
+        cur = conn.cursor()
+        addUserToCommunity("Lex", "lex@gmail.com", "243123823", "987651234", "SWEN-344")
+        makeModerator("SWEN-344", "Lex")
+        cur.execute("SELECT id FROM users WHERE username='Lex';")
+        userID = cur.fetchall()
+        createChannel(userID[0][0], "SWEN-344", "Kill_Superman", False)
+        createChannel(userID[0][0], "SWEN-440", "Kill_Superman", False)
+        cur.execute("SELECT id FROM communities WHERE name='SWEN-344';")
+        community1 = cur.fetchall()
+        cur.execute("SELECT id FROM communities WHERE name='SWEN-440';")
+        community2 = cur.fetchall()
+        cur.execute("SELECT id FROM channels WHERE name='Kill_Superman';")
+        channelID = cur.fetchall()
+        sql = """
+            SELECT COUNT(*) 
+            FROM communities_channels 
+            WHERE (community_id=%s OR community_id=%s) AND channel_id=%s;
+        """
+        cur.execute(sql, [community1[0][0], community2[0][0], channelID[0][0]])
+        self.assertEqual([(1,)], cur.fetchall(), "Incorrect amount of channels.")
+        conn.commit()
+        conn.close()
+        
+    def test_private_channel(self):
+        conn = connect()
+        cur = conn.cursor()
+        addUserToCommunity("i_told_u_1nce", "lex@gmail.com", "243123823", "987651234", "SWEN-344")
+        cur.execute("SELECT id FROM users WHERE username='i_told_u_1nce';")
+        user1 = cur.fetchall()
+        makeModerator("SWEN-344", "i_told_u_1nce")
+        createChannel(user1[0][0], "SWEN-344", "Argument Clinic", True)
+        cur.execute("SELECT id FROM channels WHERE name = 'Argument Clinic';")
+        chid = cur.fetchall()
+        cur.execute("INSERT INTO channels_messages (community_id, channel_id, message, year) VALUES ('3', %s, 'that was never five minutes just now', '2020');", [chid[0][0]])
+        addUserToCommunity("ReallyItsJohnCleese", "rijc@gmail.com", "1029384", "381948460", "SWEN-344")
+        addUserToCommunity("ICameHereForAnArgument", "ichfaa@gmail.com", "2891641", "018277389", "SWEN-344")
+        cur.execute("SELECT id FROM users WHERE username='ReallyItsJohnCleese';")
+        user2 = cur.fetchall()
+        cur.execute("SELECT id FROM users WHERE username='ICameHereForAnArgument';")
+        user3 = cur.fetchall()
+        cur.execute("SELECT message FROM channels_messages WHERE community_id = 3 AND channel_id=%s;", [chid[0][0]])
+        self.assertEqual([('that was never five minutes just now',)], cur.fetchall(), "Message cannot be read.")
+        conn.commit()
+        conn.close()
